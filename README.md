@@ -3,11 +3,12 @@
 سایت استاتیک (HTML/CSS/JS) با ویدیوی اسکرولی، پنل مدیریت و دیتابیس Supabase. بدون build و بدون هزینه.
 
 ## ساختار
+- همه فایل‌ها کنار هم هستند (بدون پوشه). همه را با هم در ریشه repository آپلود کنید.
 - `index.html` سایت اصلی
 - `admin.html` پنل مدیریت (آدرس: `سایت‌شما/admin.html`)
-- `js/config.js` مقدارهای Supabase (باید پر شود)
+- `config.js` مقدارهای Supabase (باید پر شود)
 - `supabase-setup.sql` ساخت جدول‌ها، دسترسی‌ها و فضای عکس
-- `assets/tour.mp4` ویدیوی اسکرولی، `assets/logo.png` و `assets/mark.png` لوگو
+- `tour.mp4` ویدیوی اسکرولی، `logo.png` و `mark.png` لوگو
 
 ## راه‌اندازی (حدود ۱۵ دقیقه)
 
@@ -20,7 +21,7 @@
 insert into public.admins (user_id)
 select id from auth.users where email = 'YOUR_EMAIL@example.com';
 ```
-5. از **Project Settings → API** مقدار `Project URL` و `anon public key` را کپی کنید و در `js/config.js` جایگزین کنید.
+5. از **Project Settings → API** مقدار `Project URL` و `anon public key` را کپی کنید و در `config.js` جایگزین کنید.
    (anon key عمومی است؛ امنیت با قوانین RLS داخل SQL تامین شده و فقط ادمین می‌تواند تغییر دهد.)
 
 ### ۲) GitHub Pages
@@ -38,10 +39,10 @@ select id from auth.users where email = 'YOUR_EMAIL@example.com';
 
 ## نکته‌ها
 - **رایگان بودن**: پلن رایگان Supabase پس از حدود یک هفته بدون بازدید متوقف (pause) می‌شود؛ از داشبورد با یک کلیک فعال می‌شود.
-- **لوگو**: لوگوی فعلی از روی عکس ماک‌آپ بریده شده. اگر فایل اصلی PNG شفاف دارید، `assets/logo.png` و `assets/mark.png` (فقط آیکن) را جایگزین کنید.
+- **لوگو**: لوگوی فعلی از روی عکس ماک‌آپ بریده شده. اگر فایل اصلی PNG شفاف دارید، `logo.png` و `mark.png` (فقط آیکن) را جایگزین کنید.
 - **تعویض ویدیو**: برای نرم بودن اسکرول، ویدیو باید در هر فریم keyframe داشته باشد:
 ```
-ffmpeg -i input.mp4 -an -c:v libx264 -g 1 -crf 26 -pix_fmt yuv420p -movflags +faststart assets/tour.mp4
+ffmpeg -i input.mp4 -an -c:v libx264 -g 1 -crf 26 -pix_fmt yuv420p -movflags +faststart tour.mp4
 ```
 - فونت‌ها و کتابخانه Supabase داخل خود پروژه هستند (بدون CDN خارجی).
 - روبیکا و ایتا امکان ارسال متن آماده ندارند؛ متن ملک کپی می‌شود تا مشتری در گفتگو Paste کند.
