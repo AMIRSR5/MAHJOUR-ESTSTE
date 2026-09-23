@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>املاک ماهجور | Mahjour Estate — خرید، رهن و اجاره ویلا، باغ و خانه</title>
+<meta name="description" content="املاک ماهجور: مشاهده ملک‌ها با عکس و قیمت شفاف، خرید، رهن و اجاره ویلا، باغ، خانه و نمایشگاه خودرو. تماس و گفتگوی مستقیم با مشاور.">
+<meta name="theme-color" content="#0d1524">
+<meta property="og:title" content="املاک ماهجور | Mahjour Estate">
+<meta property="og:description" content="خرید، رهن و اجاره ویلا، باغ و خانه با عکس و قیمت شفاف.">
+<meta property="og:image" content="assets/poster.jpg">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/png" href="assets/icon-192.png">
+<link rel="preload" href="fonts/Vazirmatn-VF.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+
+<div class="loader" id="loader" role="status" aria-label="در حال بارگذاری">
+  <div class="loader-in"><img src="assets/logo.png" alt="Mahjour Estate"><div class="bar"><i id="loadBar"></i></div></div>
+</div>
+
+<header class="hdr" id="hdr">
+  <a class="brand" href="#top" aria-label="املاک ماهجور">
+    <img src="assets/mark.png" alt="">
+    <span><b>Mahjour Estate</b><small>املاک ماهجور</small></span>
+  </a>
+  <nav class="nav">
+    <a class="link" href="#categories">دسته‌بندی</a>
+    <a class="link" href="#listings">ملک‌ها</a>
+    <a class="link" href="#about">درباره ما</a>
+    <a class="link" href="#contact">تماس با ما</a>
+    <a class="btn-call" id="hdrCall" href="#contact">تماس</a>
+  </nav>
+</header>
+
+<main id="top">
+  <!-- scroll-driven video tour -->
+  <div class="tour" id="tour">
+    <div class="stage">
+      <div class="poster" style="background-image:url(assets/poster.jpg)"></div>
+      <video id="tourVideo" src="assets/tour.mp4" poster="assets/poster.jpg" muted playsinline preload="auto" tabindex="-1" aria-hidden="true"></video>
+      <div class="chapters" id="chapters"></div>
+      <div class="rail" id="rail" aria-hidden="true"><i id="railFill"></i></div>
+      <div class="hint" id="hint">اسکرول کنید</div>
+    </div>
+  </div>
+
+  <section class="blk" id="categories">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>دسته‌بندی ملک‌ها</h2>
+        <p>یک دسته را انتخاب کنید تا فقط ملک‌های همان دسته نمایش داده شود.</p>
+      </div>
+      <div class="cats" id="cats"></div>
+    </div>
+  </section>
+
+  <section class="blk" id="listings" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 id="listTitle">همه ملک‌ها</h2>
+        <p id="listCount"></p>
+      </div>
+      <div class="grid" id="grid" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <section class="blk" id="about">
+    <div class="wrap about" id="aboutBox"></div>
+  </section>
+
+  <hr class="rule">
+
+  <section class="blk" id="contact">
+    <div class="wrap">
+      <div class="sec-head"><h2>تماس با ما</h2><p>روی شماره بزنید تا مستقیم تماس بگیرید.</p></div>
+      <div class="contact" id="contactBox"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <img src="assets/logo.png" alt="Mahjour Estate" style="height:54px">
+    <span id="copy"></span>
+  </div>
+</footer>
+
+<!-- property details -->
+<dialog id="detail" aria-label="جزئیات ملک"><div class="sheet" id="detailBox"></div></dialog>
+
+<!-- call or chat chooser -->
+<dialog id="dealSheet" aria-label="انتخاب راه ارتباطی"><div class="sheet" id="dealBox"></div></dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="vendor/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/site.js"></script>
+</body>
+</html>
