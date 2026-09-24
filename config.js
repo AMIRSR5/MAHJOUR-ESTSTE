@@ -1,9 +1,6 @@
 // ============ تنظیمات اتصال به Supabase ============
-// بعد از ساخت پروژه در supabase.com این دو مقدار را از
-// Project Settings → API کپی کنید و جایگزین کنید.
-// (anon key عمومی است و برای گذاشتن در سایت امن است؛ امنیت با RLS تامین می‌شود)
 window.MAHJOUR_CONFIG = {
-  SUPABASE_URL: "PASTE_YOUR_SUPABASE_URL",
-  SUPABASE_ANON_KEY: "PASTE_YOUR_ANON_KEY",
+  SUPABASE_URL: "https://ynxhbgzgfsfxdsyhrgzb.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlueGhiZ3pnZnNmeGRzeWhyZ3piIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAyMzAxNTUsImV4cCI6MjEwNTgwNjE1NX0.AtjI1MsgoIUuFnpvcqu3NZsb6_Z6oBYMLguBwjwCbiU",
   BUCKET: "estate"
 };
