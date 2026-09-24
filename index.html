@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>املاک ماهجور | Mahjour Estate — خرید، رهن و اجاره ویلا، باغ و خانه</title>
-<meta name="description" content="املاک ماهجور: مشاهده ملک‌ها با عکس و قیمت شفاف، خرید، رهن و اجاره ویلا، باغ، خانه و نمایشگاه خودرو. تماس و گفتگوی مستقیم با مشاور.">
+<title>املاک مهجور | Mahjour Estate — خرید، رهن و اجاره ویلا، باغ و خانه</title>
+<meta name="description" content="املاک مهجور: مشاهده ملک‌ها با عکس و قیمت شفاف، خرید، رهن و اجاره ویلا، باغ، خانه و نمایشگاه خودرو. تماس و گفتگوی مستقیم با مشاور.">
 <meta name="theme-color" content="#0d1524">
-<meta property="og:title" content="املاک ماهجور | Mahjour Estate">
+<meta property="og:title" content="املاک مهجور | Mahjour Estate">
 <meta property="og:description" content="خرید، رهن و اجاره ویلا، باغ و خانه با عکس و قیمت شفاف.">
 <meta property="og:image" content="poster.jpg">
 <meta property="og:type" content="website">
@@ -64,7 +64,8 @@ body.lock{overflow:hidden}
 /* ---------- scroll tour (hero) ---------- */
 .tour{position:relative}
 .stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:#000;perspective:1100px;perspective-origin:50% 60%}
-.stage video,.stage .poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.stage canvas,.stage .poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.stage canvas{display:block}
 .stage .poster{background:center/cover no-repeat}
 .stage::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
   background:
@@ -97,14 +98,35 @@ section.blk{padding:clamp(72px,11vw,140px) var(--pad);position:relative}
 .rule{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);border:0}
 
 /* categories */
-.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-.cat{background:var(--ink);border:1px solid var(--line);border-radius:var(--r);padding:26px 16px;display:grid;justify-items:center;gap:6px;text-align:center;transition:background .25s}
-.cat:hover{background:var(--ink-2)}
-.cat .ic{font-size:30px;line-height:1.2;filter:saturate(.85)}
-.cat b{font-weight:700;font-size:17px}
-.cat span{font-size:13px;color:var(--mute)}
-.cat[aria-pressed="true"]{background:var(--gold);color:var(--ink)}
-.cat[aria-pressed="true"] span{color:rgba(13,21,36,.75)}
+.cats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:900px){.cats{grid-template-columns:repeat(2,1fr);gap:12px}}
+.cat{position:relative;display:block;width:100%;aspect-ratio:1/1;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--ink-2);text-align:right;isolation:isolate;
+  transition:transform .45s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .45s;-webkit-tap-highlight-color:transparent}
+@media(max-width:900px){.cat{aspect-ratio:4/5}}
+.cat .ph{position:absolute;inset:0;z-index:-2;background:radial-gradient(circle at 50% 35%,var(--ink-3),var(--ink) 75%) center/cover no-repeat}
+.cat .ph img{width:100%;height:100%;object-fit:cover;transform:scale(1.02);filter:brightness(.82) saturate(.95);transition:transform .9s cubic-bezier(.2,.7,.2,1),filter .5s}
+.cat .ph img.logo{width:46%;height:auto;object-fit:contain;position:absolute;inset:0;margin:auto;filter:none;opacity:.9}
+.cat .ph svg{position:absolute;inset:0;width:100%;height:100%}
+.cat::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,rgba(13,21,36,.92) 0%,rgba(13,21,36,.35) 46%,rgba(13,21,36,0) 72%);transition:opacity .4s}
+.cat::after{content:"";position:absolute;inset:0;z-index:0;border-radius:inherit;box-shadow:inset 0 0 0 0 var(--gold);transition:box-shadow .35s;pointer-events:none}
+.cat .tx{position:absolute;right:0;left:0;bottom:0;padding:18px 20px 20px;transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+.cat b{display:block;font-weight:800;font-size:clamp(18px,2vw,23px);line-height:1.4;color:var(--ivory)}
+.cat .n{display:block;font-size:13px;color:#cfd6e4;margin-top:1px}
+.cat .bar{display:block;height:2px;width:26px;background:var(--gold);margin-top:10px;transition:width .5s cubic-bezier(.2,.7,.2,1)}
+.cat:focus-visible,.cat:active{border-color:var(--gold)}
+.cat:active{transform:scale(.975)}
+.cat[aria-pressed="true"]{border-color:var(--gold)}
+.cat[aria-pressed="true"]::after{box-shadow:inset 0 0 0 2px var(--gold)}
+.cat[aria-pressed="true"] .bar{width:64px}
+@media(hover:hover){
+  .cat:hover{transform:translateY(-8px);border-color:var(--gold);box-shadow:0 22px 44px -18px rgba(0,0,0,.75),0 0 0 1px rgba(214,176,102,.35),0 0 38px -10px rgba(214,176,102,.45)}
+  .cat:hover .ph img:not(.logo){transform:scale(1.12);filter:brightness(1) saturate(1.08)}
+  .cat:hover .tx{transform:translateY(-6px)}
+  .cat:hover .bar{width:calc(100% - 0px)}
+  .cat:hover::before{opacity:.85}
+}
+@media(hover:none){.cat:active .ph img:not(.logo){transform:scale(1.1);filter:brightness(1)}.cat:active .bar{width:64px}}
+@media (prefers-reduced-motion:reduce){.cat,.cat .ph img,.cat .tx,.cat .bar{transition:none}.cat:hover{transform:none}}
 
 /* listings */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:clamp(18px,2.4vw,30px)}
@@ -161,6 +183,9 @@ section.blk{padding:clamp(72px,11vw,140px) var(--pad);position:relative}
 footer{padding:38px var(--pad) 46px;border-top:1px solid var(--line);color:var(--mute);font-size:14px}
 footer .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 footer img{height:38px;width:auto}
+footer .credit{max-width:1240px;margin:28px auto 0;padding-top:22px;border-top:1px solid rgba(214,176,102,.16);display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;color:var(--mute)}
+footer .credit a{color:var(--gold-hi);font-weight:600;letter-spacing:.02em;transition:color .2s}
+footer .credit a:hover{color:var(--ivory);text-decoration:underline;text-underline-offset:4px}
 
 /* ---------- dialogs ---------- */
 dialog{border:0;padding:0;background:transparent;color:var(--ivory);max-width:100vw;max-height:100vh;margin:auto}
@@ -206,9 +231,9 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
 </div>
 
 <header class="hdr" id="hdr">
-  <a class="brand" href="#top" aria-label="املاک ماهجور">
+  <a class="brand" href="#top" aria-label="املاک مهجور">
     <img src="mark.png" alt="">
-    <span><b>Mahjour Estate</b><small>املاک ماهجور</small></span>
+    <span><b>Mahjour Estate</b><small>املاک مهجور</small></span>
   </a>
   <nav class="nav">
     <a class="link" href="#categories">دسته‌بندی</a>
@@ -224,7 +249,7 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
   <div class="tour" id="tour">
     <div class="stage">
       <div class="poster" style="background-image:url(poster.jpg)"></div>
-      <video id="tourVideo" src="tour.mp4" poster="poster.jpg" muted playsinline preload="auto" tabindex="-1" aria-hidden="true"></video>
+      <canvas id="tourCanvas" aria-hidden="true"></canvas>
       <div class="chapters" id="chapters"></div>
       <div class="rail" id="rail" aria-hidden="true"><i id="railFill"></i></div>
       <div class="hint" id="hint">اسکرول کنید</div>
@@ -272,6 +297,10 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
     <img src="logo.png" alt="Mahjour Estate" style="height:54px">
     <span id="copy"></span>
   </div>
+  <div class="credit">
+    <span>طراح سایت: امیرحسین سرافراز</span>
+    <a href="https://amirhooseinsarafraz.ir" target="_blank" rel="noopener" dir="ltr">amirhooseinsarafraz.ir</a>
+  </div>
 </footer>
 
 <!-- property details -->
@@ -298,7 +327,7 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
   const DEFAULTS = {
     hero: {
       chapters: [
-        { title: "املاک ماهجور", text: "خرید، رهن و اجاره ویلا، باغ و خانه", cta_text: "", cta_link: "" },
+        { title: "املاک مهجور", text: "خرید، رهن و اجاره ویلا، باغ و خانه", cta_text: "", cta_link: "" },
         { title: "از همین در وارد شوید", text: "هر ملک را پیش از بازدید از نزدیک ببینید: عکس، قیمت و مشخصات کامل.", cta_text: "", cta_link: "" },
         { title: "مشاور کنار شماست", text: "از اولین تماس تا نهایی شدن معامله، پاسخگوی شما هستیم.", cta_text: "", cta_link: "" },
         { title: "ملک مناسب شما این‌جاست", text: "ویلا، باغ، خانه، اجاره، رهن، خرید و نمایشگاه خودرو.", cta_text: "مشاهده ملک‌ها", cta_link: "#listings" }
@@ -306,7 +335,7 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
     },
     about: {
       title: "درباره ما",
-      body: "املاک ماهجور با هدف ساده کردن خرید، رهن و اجاره ملک شروع به کار کرد.\nهمه ملک‌ها با عکس و قیمت شفاف در همین سایت آمده‌اند و برای هر کدام می‌توانید مستقیم با ما گفتگو یا تماس بگیرید.\n(این متن را از پنل مدیریت تغییر دهید.)",
+      body: "املاک مهجور با هدف ساده کردن خرید، رهن و اجاره ملک شروع به کار کرد.\nهمه ملک‌ها با عکس و قیمت شفاف در همین سایت آمده‌اند و برای هر کدام می‌توانید مستقیم با ما گفتگو یا تماس بگیرید.\n(این متن را از پنل مدیریت تغییر دهید.)",
       stats: [
         { value: "۱۰+", label: "سال تجربه" },
         { value: "۵۰۰+", label: "معامله موفق" },
@@ -351,6 +380,17 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
     ],
     settings: {}
   };
+
+  /* ---------- category photos ---------- */
+  const CAT_IMG = { "باغ": "cat-garden.jpg", "ویلا": "cat-villa.jpg", "خانه": "cat-house.jpg", "اجاره": "cat-rent.jpg", "رهن": "cat-mortgage.jpg", "خرید": "cat-buy.jpg" };
+  const CAR_SVG = "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c2a48"/><stop offset="1" stop-color="#0d1524"/></linearGradient></defs><rect width="500" height="500" fill="url(#g)"/><g fill="none" stroke="#d6b066" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" transform="translate(0,-30)"><path d="M70 290 L70 250 Q70 235 88 230 L150 215 L200 170 Q210 160 225 160 L320 160 Q335 160 345 170 L385 215 L410 225 Q425 230 425 248 L425 290"/><path d="M205 215 L235 175 L305 175 L340 215 Z"/><path d="M70 290 H112 M188 290 H307 M383 290 H425"/><circle cx="150" cy="290" r="38"/><circle cx="345" cy="290" r="38"/><circle cx="150" cy="290" r="14"/><circle cx="345" cy="290" r="14"/><path d="M60 345 H440" stroke-width="2" opacity=".5"/></g></svg>');
+  // returns { src, kind } — kind "photo" | "svg" | "none"
+  function catImage(c) {
+    if (c.image_url) return { src: c.image_url, kind: "photo" };
+    if (CAT_IMG[(c.name || "").trim()]) return { src: CAT_IMG[c.name.trim()], kind: "photo" };
+    if (/ماشین|خودرو/.test(c.name || "")) return { src: CAR_SVG, kind: "photo" };
+    return { src: "mark.png", kind: "logo" };
+  }
 
   /* ---------- formatting ---------- */
   const fa = new Intl.NumberFormat("fa-IR");
@@ -439,7 +479,7 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
     const { data } = await q; return data || [];
   }
 
-  window.ME = { C, configured, sb, DEFAULTS, DEMO, esc, fa, formatToman, priceLines, toFaDigits, toEnDigits,
+  window.ME = { C, configured, sb, DEFAULTS, DEMO, catImage, esc, fa, formatToman, priceLines, toFaDigits, toEnDigits,
     cleanPhone, callHref, chatTarget, fillTemplate, CHANNELS, loadSettings, loadCategories, loadListings };
 })();
 
@@ -452,9 +492,15 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
   let S, CATS = [], LIST = [], active = "all";
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ================= tour (scroll-scrubbed video) ================= */
-  const tour = $("#tour"), video = $("#tourVideo"), chWrap = $("#chapters"), rail = $("#rail"), railFill = $("#railFill"), hint = $("#hint");
-  let chEls = [], railDots = [], cur = 0;
+  /* ================= tour (scroll-scrubbed frame sequence) ================= */
+  // The video is stored as a few sprite sheets (works the same on iPhone, Android and desktop).
+  const tour = $("#tour"), canvas = $("#tourCanvas"), ctx = canvas.getContext("2d"), chWrap = $("#chapters"), rail = $("#rail"), railFill = $("#railFill"), hint = $("#hint");
+  const SETS = {
+    d: { n: 66, per: 22, cols: 4, fw: 960, fh: 540, files: ["frames-d1.jpg", "frames-d2.jpg", "frames-d3.jpg"] },
+    m: { n: 80, per: 40, cols: 8, fw: 405, fh: 720, files: ["frames-m1.jpg", "frames-m2.jpg"] }
+  };
+  let chEls = [], railDots = [], cur = 0, kind = null, set = null, sheets = [], nLoaded = 0, lastKey = "";
+  const pickKind = () => (innerWidth / innerHeight < .85 ? "m" : "d");
 
   function buildChapters(chs) {
     chWrap.innerHTML = ""; chEls = [];
@@ -473,6 +519,45 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
     const r = tour.getBoundingClientRect();
     return clamp(-r.top / (tour.offsetHeight - innerHeight), 0, 1);
   }
+
+  /* --- canvas --- */
+  function sizeCanvas() {
+    const dpr = Math.min(devicePixelRatio || 1, 1.5);
+    const w = Math.round(canvas.clientWidth * dpr), h = Math.round(canvas.clientHeight * dpr);
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; lastKey = ""; }
+    ctx.imageSmoothingQuality = "high";
+  }
+  function frameAt(i) { // nearest loaded frame at or below i
+    for (let k = i; k >= 0; k--) { const im = sheets[Math.floor(k / set.per)]; if (im) return [im, k]; }
+    for (let k = i; k < set.n; k++) { const im = sheets[Math.floor(k / set.per)]; if (im) return [im, k]; }
+    return null;
+  }
+  function blit(im, idx) {
+    const j = idx % set.per, sx = (j % set.cols) * set.fw, sy = Math.floor(j / set.cols) * set.fh;
+    const W = canvas.width, H = canvas.height, s = Math.max(W / set.fw, H / set.fh), dw = set.fw * s, dh = set.fh * s;
+    ctx.drawImage(im, sx, sy, set.fw, set.fh, (W - dw) / 2, (H - dh) / 2, dw, dh);
+  }
+  function draw(p) {
+    if (!set) return;
+    const pos = clamp(p, 0, 1) * (set.n - 1), i = Math.floor(pos), f = pos - i;
+    const key = kind + pos.toFixed(3) + nLoaded + canvas.width + "x" + canvas.height;
+    if (key === lastKey) return; lastKey = key;
+    const a = frameAt(i); if (!a) return;
+    ctx.globalAlpha = 1; blit(a[0], a[1]);
+    if (f > .03 && i < set.n - 1) { const b = frameAt(i + 1); if (b && b[1] !== a[1]) { ctx.globalAlpha = f; blit(b[0], b[1]); ctx.globalAlpha = 1; } }
+  }
+  function loadSet(k) {
+    kind = k; set = SETS[k]; sheets = new Array(set.files.length).fill(null); nLoaded = 0; lastKey = "";
+    const mine = set;
+    set.files.forEach((f, i) => {
+      const im = new Image(); im.decoding = "async";
+      const done = ok => { if (mine !== set) return; if (ok) sheets[i] = im; nLoaded++; progressBar(); draw(cur); if (nLoaded === mine.files.length) hideLoader(); };
+      im.onload = () => (im.decode ? im.decode().then(() => done(true), () => done(true)) : done(true));
+      im.onerror = () => done(false);
+      im.src = f;
+    });
+  }
+  let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { sizeCanvas(); if (pickKind() !== kind) loadSet(pickKind()); else draw(cur); }, 150); });
 
   const smooth = t => t * t * (3 - 2 * t);
   function renderChapters(p) {
@@ -503,18 +588,12 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
   let target = 0;
   function tick() {
     target = progress();
-    cur += (target - cur) * (reduce ? 1 : .16);
+    cur += (target - cur) * (reduce ? 1 : .18);
     if (Math.abs(target - cur) < .0003) cur = target;
-    if (video.duration && isFinite(video.duration)) {
-      const t = cur * video.duration * .999;
-      if (Math.abs(video.currentTime - t) > .02 && !video.seeking) video.currentTime = t;
-    }
+    draw(cur);
     renderChapters(cur);
     requestAnimationFrame(tick);
   }
-
-  // iOS/Safari: allow currentTime seeking after the first touch
-  addEventListener("touchstart", () => { video.play().then(() => video.pause()).catch(() => {}); }, { once: true, passive: true });
 
   /* ================= header ================= */
   const hdr = $("#hdr");
@@ -525,19 +604,19 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
   const loader = $("#loader"), bar = $("#loadBar");
   let hidden = false;
   const hideLoader = () => { if (hidden) return; hidden = true; bar.style.transform = "scaleX(1)"; setTimeout(() => loader.classList.add("done"), 250); };
-  video.addEventListener("progress", () => {
-    try { if (video.duration) bar.style.transform = `scaleX(${Math.max(.05, video.buffered.end(video.buffered.length - 1) / video.duration)})`; } catch (e) {}
-  });
-  video.addEventListener("canplaythrough", hideLoader, { once: true });
-  video.addEventListener("error", hideLoader);
-  setTimeout(hideLoader, 7000);
+  const progressBar = () => { bar.style.transform = `scaleX(${Math.max(.08, nLoaded / (set ? set.files.length : 1))})`; };
+  setTimeout(hideLoader, 9000);
 
   /* ================= categories & listings ================= */
   function renderCats() {
     const counts = {}; LIST.forEach(l => counts[l.category_id] = (counts[l.category_id] || 0) + 1);
-    const tiles = [{ id: "all", name: "همه", icon: "✦", n: LIST.length }].concat(CATS.map(c => ({ ...c, n: counts[c.id] || 0 })));
-    $("#cats").innerHTML = tiles.map(c => `<button class="cat" data-c="${esc(c.id)}" aria-pressed="${c.id === active}">
-      <span class="ic" aria-hidden="true" style="color:inherit">${esc(c.icon || "")}</span><b>${esc(c.name)}</b><span>${toFaDigits(c.n)} ملک</span></button>`).join("");
+    const tiles = [{ id: "all", name: "همه", n: LIST.length, all: true }].concat(CATS.map(c => ({ ...c, n: counts[c.id] || 0 })));
+    $("#cats").innerHTML = tiles.map(c => {
+      const im = c.all ? { src: "mark.png", kind: "logo" } : ME.catImage(c);
+      return `<button class="cat" data-c="${esc(c.id)}" aria-pressed="${c.id === active}">
+        <span class="ph"><img class="${im.kind === "logo" ? "logo" : ""}" src="${esc(im.src)}" alt="" loading="lazy"></span>
+        <span class="tx"><b>${esc(c.name)}</b><span class="n">${toFaDigits(c.n)} ملک</span><i class="bar"></i></span></button>`;
+    }).join("");
   }
   const catName = id => (CATS.find(c => c.id === id) || {}).name || "";
 
@@ -628,7 +707,7 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
     const stats = (a.stats || []).filter(s => s.value || s.label);
     $("#aboutBox").innerHTML = `<div class="body"><h2>${esc(a.title || "درباره ما")}</h2>${paras.map(p => `<p>${esc(p)}</p>`).join("")}
       ${stats.length ? `<div class="stats">${stats.map(s => `<div><b>${esc(s.value)}</b><span>${esc(s.label)}</span></div>`).join("")}</div>` : ""}</div>
-      <div class="art">${a.image_url ? `<img class="photo" src="${esc(a.image_url)}" alt="املاک ماهجور" loading="lazy">` : `<img src="logo.png" alt="Mahjour Estate">`}</div>`;
+      <div class="art">${a.image_url ? `<img class="photo" src="${esc(a.image_url)}" alt="املاک مهجور" loading="lazy">` : `<img src="logo.png" alt="Mahjour Estate">`}</div>`;
   }
   function renderContact() {
     const c = S.contact, phones = (c.phones || []).filter(p => p.number);
@@ -655,8 +734,8 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
     catch (e) { console.error(e); S = JSON.parse(JSON.stringify(ME.DEFAULTS)); CATS = ME.DEMO.categories; LIST = ME.DEMO.listings; }
     buildChapters(S.hero.chapters && S.hero.chapters.length ? S.hero.chapters : ME.DEFAULTS.hero.chapters);
     renderCats(); renderList(); renderAbout(); renderContact();
-    $("#copy").textContent = "© " + new Date().toLocaleDateString("fa-IR", { year: "numeric" }) + " املاک ماهجور — Mahjour Estate";
-    if (video.readyState >= 3) hideLoader();
+    $("#copy").textContent = "© " + new Date().toLocaleDateString("fa-IR", { year: "numeric" }) + " املاک مهجور — Mahjour Estate";
+    sizeCanvas(); loadSet(pickKind());
     requestAnimationFrame(tick);
   })();
 })();

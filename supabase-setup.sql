@@ -13,6 +13,7 @@ create table if not exists public.categories (
   id      uuid primary key default gen_random_uuid(),
   name    text not null,
   icon    text default '',
+  image_url text default '',
   sort    int  not null default 0,
   active  boolean not null default true,
   created_at timestamptz not null default now()
@@ -41,6 +42,9 @@ create table if not exists public.listings (
 create table if not exists public.admins (
   user_id uuid primary key references auth.users(id) on delete cascade
 );
+
+-- for projects created before category photos existed (safe to run again):
+alter table public.categories add column if not exists image_url text default '';
 
 create index if not exists listings_cat_idx on public.listings(category_id);
 
