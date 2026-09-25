@@ -1,4 +1,4 @@
-# املاک مهجور — Mahjour Estate
+# املاک مهجور — MAHJOR ESTATE
 
 سایت استاتیک (HTML/CSS/JS) با ویدیوی اسکرولی، پنل مدیریت و دیتابیس Supabase. بدون build و بدون هزینه.
 
@@ -53,3 +53,10 @@ ffmpeg -i input.mp4 -an -c:v libx264 -g 1 -crf 26 -pix_fmt yuv420p -movflags +fa
 ```
 - فونت‌ها و کتابخانه Supabase داخل خود پروژه هستند (بدون CDN خارجی).
 - روبیکا و ایتا امکان ارسال متن آماده ندارند؛ متن ملک کپی می‌شود تا مشتری در گفتگو Paste کند.
+
+## سئو و گوگل
+1. فایل‌های `robots.txt` و `sitemap.xml` را کنار `index.html` آپلود کنید.
+2. در search.google.com/search-console یک property از نوع **URL prefix** با آدرس کامل سایت بسازید.
+3. تأیید مالکیت: فایل HTML که گوگل می‌دهد را در ریشه repository آپلود کنید (یا تگ meta را در `index.html` جایگزین کنید).
+4. از منوی Sitemaps آدرس `sitemap.xml` را ثبت کنید و در URL Inspection آدرس سایت را بزنید و **Request indexing**.
+5. رتبه‌گرفتن چند روز تا چند هفته طول می‌کشد. دامنه اختصاصی، Google Business Profile و لینک از اینستاگرام/تلگرام رتبه را بهتر می‌کند.

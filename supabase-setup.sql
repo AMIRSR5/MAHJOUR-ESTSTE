@@ -1,5 +1,5 @@
 -- =====================================================
--- Mahjour Estate — Supabase setup
+-- MAHJOR ESTATE — Supabase setup
 -- Run once: Supabase Dashboard → SQL Editor → New query → paste → Run
 -- =====================================================
 
