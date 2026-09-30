@@ -562,8 +562,8 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
   // The video is stored as a few sprite sheets (works the same on iPhone, Android and desktop).
   const tour = $("#tour"), canvas = $("#tourCanvas"), ctx = canvas.getContext("2d"), chWrap = $("#chapters"), rail = $("#rail"), railFill = $("#railFill"), hint = $("#hint");
   const SETS = {
-    d: { n: 48, per: 16, cols: 4, fw: 854, fh: 480, files: ["frames-d1.jpg", "frames-d2.jpg", "frames-d3.jpg"] },
-    m: { n: 48, per: 12, cols: 3, fw: 390, fh: 693, files: ["frames-m1.jpg", "frames-m2.jpg", "frames-m3.jpg", "frames-m4.jpg"] }
+    d: { n: 72, per: 16, cols: 4, fw: 854, fh: 480, files: ["frames-d1.jpg", "frames-d2.jpg", "frames-d3.jpg", "frames-d4.jpg", "frames-d5.jpg"] },
+    m: { n: 72, per: 12, cols: 3, fw: 390, fh: 693, files: ["frames-m1.jpg", "frames-m2.jpg", "frames-m3.jpg", "frames-m4.jpg", "frames-m5.jpg", "frames-m6.jpg"] }
   };
   let chEls = [], railDots = [], cur = 0, kind = null, set = null, sheets = [], nLoaded = 0, lastKey = "";
   const pickKind = () => (innerWidth / innerHeight < .85 ? "m" : "d");
@@ -605,12 +605,14 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
   }
   function draw(p) {
     if (!set) return;
-    const pos = clamp(p, 0, 1) * (set.n - 1), i = Math.floor(pos), f = pos - i;
-    const key = kind + pos.toFixed(3) + nLoaded + canvas.width + "x" + canvas.height;
+    // snap to the nearest sampled frame — no cross-fade blend between two frames.
+    // blending two different frames created a soft double-exposure/ghosting look
+    // (very visible on fine detail like railings) even though it was meant to smooth motion.
+    const pos = clamp(p, 0, 1) * (set.n - 1), i = Math.round(pos);
+    const key = kind + i + nLoaded + canvas.width + "x" + canvas.height;
     if (key === lastKey) return; lastKey = key;
     const a = frameAt(i); if (!a) return;
     ctx.globalAlpha = 1; blit(a[0], a[1]);
-    if (f > .03 && i < set.n - 1) { const b = frameAt(i + 1); if (b && b[1] !== a[1]) { ctx.globalAlpha = f; blit(b[0], b[1]); ctx.globalAlpha = 1; } }
   }
   function loadSet(k) {
     kind = k; set = SETS[k]; sheets = new Array(set.files.length).fill(null); nLoaded = 0; lastKey = "";
