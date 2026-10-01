@@ -640,13 +640,14 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
       const o = t < -0.02 || t > 1.02 ? 0 : Math.min(fin, fout);
       el.style.opacity = o;
       el.style.visibility = o < .01 ? "hidden" : "visible";
-      if (reduce) { el.style.transform = "none"; el.style.filter = "none"; return; }
-      // moving "through" the space, in step with the camera: arrive from depth, leave toward the viewer
-      let z = 0, b = 0;
-      if (!first && t < .22) { z = -(1 - fin) * 260; b = (1 - fin) * 8; }
-      if (!last && t > .78) { z = (1 - fout) * 320; b = (1 - fout) * 10; }
+      if (reduce) { el.style.transform = "none"; return; }
+      // moving "through" the space, in step with the camera: arrive from depth, leave toward the viewer.
+      // (no blur here on purpose — a blur tied to slow scroll progress reads as the page lagging/glitching
+      // rather than a deliberate effect, especially when someone lingers mid-transition.)
+      let z = 0;
+      if (!first && t < .22) { z = -(1 - fin) * 260; }
+      if (!last && t > .78) { z = (1 - fout) * 320; }
       el.style.transform = `translate3d(0,0,${z}px)`;
-      el.style.filter = b > .1 ? `blur(${b.toFixed(1)}px)` : "none";
       el.style.pointerEvents = o > .6 ? "" : "none";
     });
     const idx = clamp(Math.floor(p * n - 0.0001), 0, n - 1);
