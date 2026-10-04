@@ -258,9 +258,10 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
 .gal{background:#000;position:sticky;top:0;align-self:start}
 .gal .main{aspect-ratio:4/3;width:100%;object-fit:cover}
 .thumbs{display:flex;gap:6px;padding:8px;overflow-x:auto;background:var(--ink)}
-.thumbs button{flex:0 0 74px;height:54px;border-radius:4px;overflow:hidden;opacity:.55;border:1px solid transparent}
+.thumbs button{position:relative;flex:0 0 74px;height:54px;border-radius:4px;overflow:hidden;opacity:.55;border:1px solid transparent}
 .thumbs button.on{opacity:1;border-color:var(--gold)}
 .thumbs img{width:100%;height:100%;object-fit:cover}
+.thumbs .vt{position:absolute;inset:0;display:grid;place-items:center;background:rgba(13,21,36,.4);color:var(--gold-hi);font-size:13px;z-index:1}
 .dinfo{padding:clamp(20px,3vw,34px);display:flex;flex-direction:column;gap:12px}
 .dinfo h3{font-size:clamp(22px,3vw,30px);font-weight:800;line-height:1.5;padding-inline-end:36px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
@@ -806,10 +807,14 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
   const dlg = $("#detail");
   function openDetail(l) {
     const imgs = (l.images && l.images.length) ? l.images : ["poster.jpg"];
+    const media = (l.video_url ? [{ type: "video", src: l.video_url, poster: imgs[0] }] : []).concat(imgs.map(s => ({ type: "image", src: s })));
     const chips = [catName(l.category_id), l.location, l.area_m2 ? toFaDigits(l.area_m2) + " متر" : "", l.rooms ? toFaDigits(l.rooms) + " خوابه" : "", "کد " + toFaDigits(l.code || "")].filter(x => x && x !== "کد ");
+    const mainFor = m => m.type === "video"
+      ? `<video class="main" id="dMain" src="${esc(m.src)}" poster="${esc(m.poster || "")}" controls playsinline></video>`
+      : `<img class="main" id="dMain" src="${esc(m.src)}" alt="${esc(l.title)}">`;
     $("#detailBox").innerHTML = `<button class="x" id="dx" aria-label="بستن">×</button>
-      <div class="gal"><img class="main" id="dMain" src="${esc(imgs[0])}" alt="${esc(l.title)}">
-        ${imgs.length > 1 ? `<div class="thumbs">${imgs.map((s, i) => `<button class="${i ? "" : "on"}" data-i="${i}" aria-label="تصویر ${toFaDigits(i + 1)}"><img src="${esc(s)}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}</div>
+      <div class="gal"><div id="dMainWrap">${mainFor(media[0])}</div>
+        ${media.length > 1 ? `<div class="thumbs">${media.map((m, i) => `<button class="${i ? "" : "on"}" data-i="${i}" aria-label="${m.type === "video" ? "ویدیوی ملک" : "تصویر " + toFaDigits(i + 1)}">${m.type === "video" ? `<span class="vt">▶</span>` : ""}<img src="${esc(m.type === "video" ? (m.poster || imgs[0]) : m.src)}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}</div>
       <div class="dinfo"><h3>${esc(l.title)}</h3><div class="chips">${chips.map(c => `<span>${esc(c)}</span>`).join("")}</div>
         <p class="desc">${esc(l.description || "")}</p>
         <div class="price">${priceLines(l).map(x => `<div>${esc(x)}</div>`).join("")}</div>
@@ -818,7 +823,7 @@ dialog::backdrop{background:rgba(6,10,18,.82);backdrop-filter:blur(4px)}
     $("#dDeal").onclick = () => startDeal(l);
     $(".thumbs", dlg)?.addEventListener("click", e => {
       const b = e.target.closest("button"); if (!b) return;
-      $("#dMain").src = imgs[b.dataset.i];
+      $("#dMainWrap").innerHTML = mainFor(media[+b.dataset.i]);
       dlg.querySelectorAll(".thumbs button").forEach(x => x.classList.toggle("on", x === b));
     });
     document.body.classList.add("lock"); dlg.showModal();

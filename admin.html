@@ -64,6 +64,16 @@ dialog::backdrop{background:rgba(6,10,18,.85)}
 .opts{display:grid;gap:8px}.opt{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:var(--r);cursor:pointer}
 .opt input{width:auto;margin-top:6px}.opt small{display:block;color:var(--mute)}
 
+.cropOuter{display:flex;justify-content:center;margin-bottom:4px}
+.cropWrap{position:relative;display:inline-block;line-height:0;max-width:100%;max-height:60vh;overflow:hidden;background:#000;border-radius:6px}
+.cropWrap img{display:block;max-width:100%;max-height:60vh;user-select:none;-webkit-user-drag:none}
+.cropBox{position:absolute;border:2px solid var(--gold);box-shadow:0 0 0 2000px rgba(0,0,0,.55);cursor:move;touch-action:none}
+.cropBox i{position:absolute;width:18px;height:18px;background:var(--gold);border-radius:50%;touch-action:none;box-shadow:0 0 0 3px rgba(13,21,36,.6)}
+.cropBox i[data-h=tl]{top:-9px;left:-9px;cursor:nwse-resize}
+.cropBox i[data-h=tr]{top:-9px;right:-9px;cursor:nesw-resize}
+.cropBox i[data-h=bl]{bottom:-9px;left:-9px;cursor:nesw-resize}
+.cropBox i[data-h=br]{bottom:-9px;right:-9px;cursor:nwse-resize}
+
 </style>
 </head>
 <body>
@@ -307,7 +317,7 @@ dialog::backdrop{background:rgba(6,10,18,.85)}
   function tabListings() {
     $("#main").innerHTML = `<div class="bar"><div><h2>ملک‌ها</h2><p class="sub" style="margin:0">عکس، توضیحات، قیمت و نوع دکمه معامله هر ملک را اینجا تنظیم کنید.</p></div><button class="btn gold" id="add">+ ملک جدید</button></div>
       ${LIST.map(l => `<div class="row" data-id="${l.id}"><img src="${esc((l.images || [])[0] || "poster.jpg")}" alt=""><div class="grow"><b>${esc(l.title)}</b><small>${esc(catName(l.category_id))} · کد ${toFaDigits(l.code || "")} · ${esc(ME.priceLines(l).join("، "))}</small></div>
-      ${l.active ? "" : `<span class="pill off">مخفی</span>`}${l.featured ? `<span class="pill">ویژه</span>` : ""}
+      ${l.active ? "" : `<span class="pill off">مخفی</span>`}${l.featured ? `<span class="pill">ویژه</span>` : ""}${l.video_url ? `<span class="pill">ویدیو</span>` : ""}
       <div class="acts"><button class="btn sm" data-a="edit">ویرایش</button><button class="btn sm bad" data-a="del">حذف</button></div></div>`).join("") || `<div class="card sub">هنوز ملکی ثبت نشده. با «ملک جدید» شروع کنید.</div>`}`;
     $("#add").onclick = () => listingForm();
     $("#main").onclick = async e => {
@@ -337,17 +347,135 @@ dialog::backdrop{background:rgba(6,10,18,.85)}
       img.onerror = () => rej(new Error("bad image")); img.src = url;
     });
   }
-  async function uploadImage(file, folder) {
-    const blob = await compress(file);
-    const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
-    const { error } = await sb.storage.from(C.BUCKET).upload(path, blob, { contentType: "image/jpeg", cacheControl: "31536000" });
+  async function uploadBlobFile(blob, folder, ext, contentType) {
+    const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await sb.storage.from(C.BUCKET).upload(path, blob, { contentType, cacheControl: "31536000" });
     if (error) throw error;
     return sb.storage.from(C.BUCKET).getPublicUrl(path).data.publicUrl;
+  }
+  async function uploadImage(file, folder) {
+    const blob = await compress(file);
+    return uploadBlobFile(blob, folder, "jpg", "image/jpeg");
+  }
+
+  /* ---------------- image cropper (click a thumbnail → ویرایش) ---------------- */
+  function openCropper(url, onDone) {
+    const cd = document.createElement("dialog"); document.body.appendChild(cd);
+    cd.innerHTML = `<div class="sheet" style="width:min(560px,94vw);padding:16px">
+      <h2 style="margin-bottom:10px">ویرایش ابعاد عکس</h2>
+      <div class="cropOuter"><div class="cropWrap" id="cropWrap">
+        <img id="cropImg" src="${esc(url)}" crossorigin="anonymous" alt="">
+        <div class="cropBox" id="cropBox"><i data-h="tl"></i><i data-h="tr"></i><i data-h="bl"></i><i data-h="br"></i></div>
+      </div></div>
+      <div class="bar" style="margin-top:10px;flex-wrap:wrap;gap:8px;justify-content:flex-start">
+        <button class="btn sm" data-r="free">آزاد</button><button class="btn sm" data-r="1:1">۱:۱</button>
+        <button class="btn sm" data-r="4:3">۴:۳</button><button class="btn sm" data-r="16:9">۱۶:۹</button>
+      </div>
+      <div class="bar" style="margin-top:14px"><button class="btn" id="cropCancel">انصراف</button><button class="btn gold" id="cropApply">اعمال</button></div>
+    </div>`;
+    const close = () => { cd.close(); cd.remove(); };
+    cd.addEventListener("click", e => { if (e.target === cd) close(); });
+    const img = cd.querySelector("#cropImg"), box = cd.querySelector("#cropBox");
+    let ratio = null, r = { x: 0, y: 0, w: 0, h: 0 };
+    function fitBox() {
+      const W = img.clientWidth, H = img.clientHeight;
+      let w = W * .86, h = ratio ? w / ratio : H * .86;
+      if (h > H * .92) { h = H * .92; w = ratio ? h * ratio : w; }
+      r = { x: (W - w) / 2, y: (H - h) / 2, w, h }; paint();
+    }
+    function paint() { box.style.left = r.x + "px"; box.style.top = r.y + "px"; box.style.width = r.w + "px"; box.style.height = r.h + "px"; }
+    img.onload = fitBox; if (img.complete && img.naturalWidth) fitBox();
+    cd.querySelectorAll("[data-r]").forEach(b => b.onclick = () => {
+      ratio = b.dataset.r === "free" ? null : b.dataset.r === "1:1" ? 1 : b.dataset.r === "4:3" ? 4 / 3 : 16 / 9;
+      fitBox();
+    });
+    function clampBox() {
+      const W = img.clientWidth, H = img.clientHeight;
+      r.w = Math.min(r.w, W); r.h = Math.min(r.h, H);
+      r.x = Math.max(0, Math.min(r.x, W - r.w)); r.y = Math.max(0, Math.min(r.y, H - r.h));
+    }
+    let mode = null, start = null;
+    box.addEventListener("pointerdown", e => {
+      mode = e.target.dataset.h || "move"; start = { x: e.clientX, y: e.clientY, r: { ...r } };
+      box.setPointerCapture(e.pointerId); e.preventDefault();
+    });
+    box.addEventListener("pointermove", e => {
+      if (!mode) return;
+      const dx = e.clientX - start.x, dy = e.clientY - start.y;
+      let { x, y, w, h } = start.r;
+      if (mode === "move") { x += dx; y += dy; }
+      else {
+        if (mode.includes("l")) { x += dx; w -= dx; } if (mode.includes("r")) { w += dx; }
+        if (mode.includes("t")) { y += dy; h -= dy; } if (mode.includes("b")) { h += dy; }
+        if (ratio) { h = w / ratio; if (mode.includes("t")) y = start.r.y + start.r.h - h; }
+        w = Math.max(40, w); h = Math.max(40, h);
+      }
+      r = { x, y, w, h }; clampBox(); paint();
+    });
+    const endDrag = () => { mode = null; };
+    box.addEventListener("pointerup", endDrag); box.addEventListener("pointercancel", endDrag);
+    cd.querySelector("#cropCancel").onclick = close;
+    cd.querySelector("#cropApply").onclick = async () => {
+      const btn = cd.querySelector("#cropApply"); btn.disabled = true; btn.textContent = "در حال پردازش…";
+      try {
+        const sx = img.naturalWidth / img.clientWidth, sy = img.naturalHeight / img.clientHeight;
+        const c = document.createElement("canvas");
+        c.width = Math.max(1, Math.round(r.w * sx)); c.height = Math.max(1, Math.round(r.h * sy));
+        c.getContext("2d").drawImage(img, r.x * sx, r.y * sy, r.w * sx, r.h * sy, 0, 0, c.width, c.height);
+        const blob = await new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error("crop failed")), "image/jpeg", .88));
+        const newUrl = await uploadBlobFile(blob, "listings", "jpg", "image/jpeg");
+        close(); onDone(newUrl);
+      } catch (er) { toast("ویرایش عکس ناموفق: " + (er.message || er), true); btn.disabled = false; btn.textContent = "اعمال"; }
+    };
+    cd.showModal();
+  }
+
+  /* ---------------- video: duration check + trim/transcode (ffmpeg.wasm, loaded on demand) ---------------- */
+  let _ffmpegPromise = null;
+  function getFFmpeg() {
+    if (_ffmpegPromise) return _ffmpegPromise;
+    _ffmpegPromise = (async () => {
+      const { FFmpeg } = await import("https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js");
+      const { toBlobURL } = await import("https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js");
+      const base = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm";
+      const ff = new FFmpeg();
+      await ff.load({
+        coreURL: await toBlobURL(`${base}/ffmpeg-core.js`, "text/javascript"),
+        wasmURL: await toBlobURL(`${base}/ffmpeg-core.wasm`, "application/wasm"),
+      });
+      return ff;
+    })();
+    return _ffmpegPromise;
+  }
+  function videoDuration(file) {
+    return new Promise((res, rej) => {
+      const v = document.createElement("video"); v.preload = "metadata";
+      v.onloadedmetadata = () => { res(v.duration); URL.revokeObjectURL(v.src); };
+      v.onerror = () => rej(new Error("فایل ویدیویی خوانده نشد"));
+      v.src = URL.createObjectURL(file);
+    });
+  }
+  async function transcodeVideo(file, trimSeconds, onProgress) {
+    const ff = await getFFmpeg();
+    const onP = ({ progress }) => onProgress && onProgress(Math.max(0, Math.min(99, progress * 100)));
+    ff.on("progress", onP);
+    try {
+      const inName = "in_" + Date.now() + (file.name.match(/\.\w+$/)?.[0] || ".mp4");
+      ff.writeFile && await ff.writeFile(inName, new Uint8Array(await file.arrayBuffer()));
+      const args = ["-i", inName];
+      if (trimSeconds) args.push("-t", String(trimSeconds));
+      args.push("-vf", "scale='min(1280,iw)':-2", "-c:v", "libx264", "-preset", "veryfast", "-crf", "27", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", "out.mp4");
+      await ff.exec(args);
+      const data = await ff.readFile("out.mp4");
+      ff.deleteFile(inName).catch(() => {}); ff.deleteFile("out.mp4").catch(() => {});
+      return new Blob([data.buffer], { type: "video/mp4" });
+    } finally { ff.off("progress", onP); }
   }
 
   function listingForm(l) {
     const isNew = !l; l = l || { title: "", description: "", images: [], deal_mode: "default", active: true, featured: false, category_id: CATS[0]?.id };
     let imgs = [...(l.images || [])], removed = [];
+    let videoUrl = l.video_url || "", removedVideo = "";
     dlgBox.innerHTML = `<h2>${isNew ? "ملک جدید" : "ویرایش ملک"}</h2>
       <div class="f"><label>عنوان</label><input id="fT" value="${esc(l.title)}" placeholder="مثلاً ویلای سنگی با حیاط بزرگ"></div>
       <div class="g2"><div class="f"><label>دسته‌بندی</label><select id="fC">${CATS.map(c => `<option value="${c.id}" ${c.id === l.category_id ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div>
@@ -358,19 +486,49 @@ dialog::backdrop{background:rgba(6,10,18,.85)}
       <div class="f"><label>متن قیمت دلخواه — اختیاری (اگر پر شود به‌جای عدد نمایش داده می‌شود، مثل «توافقی»)</label><input id="fPT" value="${esc(l.price_text || "")}"></div>
       <div class="g2"><div class="f"><label>متراژ</label><input id="fA" inputmode="numeric" value="${l.area_m2 || ""}"></div><div class="f"><label>تعداد اتاق</label><input id="fRm" inputmode="numeric" value="${l.rooms || ""}"></div></div>
       <div class="f"><label>دکمه معامله برای این ملک</label><select id="fDM">${[["default", "طبق تنظیم کلی"], ["call", "فقط تماس"], ["chat", "فقط پیام"], ["both", "انتخاب مشتری (تماس یا پیام)"]].map(([v, n]) => `<option value="${v}" ${l.deal_mode === v ? "selected" : ""}>${n}</option>`).join("")}</select></div>
-      <div class="f"><label>عکس‌ها (اولی عکس شاخص است)</label><div class="imgs" id="imgs"></div>
+      <div class="f"><label>عکس‌ها (اولی عکس شاخص است — روی «ویرایش» بزنید تا ابعاد عکس را تغییر دهید)</label><div class="imgs" id="imgs"></div>
         <label class="btn sm" style="cursor:pointer">+ افزودن عکس<input id="fF" type="file" accept="image/*" multiple hidden></label> <span class="hint" id="up"></span></div>
+      <div class="f"><label>ویدیوی ملک — اختیاری (حداکثر ۱۵ ثانیه؛ ویدیوی طولانی‌تر خودکار از همان ابتدا بریده می‌شود)</label>
+        <div id="vidBox"></div>
+        <label class="btn sm" style="cursor:pointer">+ افزودن / جایگزینی ویدیو<input id="fV" type="file" accept="video/*" hidden></label> <span class="hint" id="vidStatus"></span></div>
       <div class="g2"><label class="chk"><input type="checkbox" id="fAc" ${l.active ? "checked" : ""}>نمایش در سایت</label><label class="chk"><input type="checkbox" id="fFe" ${l.featured ? "checked" : ""}>ملک ویژه (اول لیست)</label></div>
       <div class="bar" style="margin:22px 0 0"><button class="btn" id="cancel">انصراف</button><button class="btn gold" id="save">ذخیره</button></div>`;
     const drawImgs = () => {
-      $("#imgs").innerHTML = imgs.map((u, i) => `<div class="im"><img src="${esc(u)}" alt="">${i === 0 ? `<span class="t">شاخص</span>` : ""}<div class="ctl"><button data-m="${i}" data-d="1" title="جلوتر">→</button><button data-x="${i}" title="حذف">✕</button><button data-m="${i}" data-d="-1" title="عقب‌تر">←</button></div></div>`).join("");
+      $("#imgs").innerHTML = imgs.map((u, i) => `<div class="im"><img src="${esc(u)}" alt="">${i === 0 ? `<span class="t">شاخص</span>` : ""}<div class="ctl"><button data-m="${i}" data-d="1" title="جلوتر">→</button><button data-e="${i}" title="ویرایش ابعاد">✎</button><button data-x="${i}" title="حذف">✕</button><button data-m="${i}" data-d="-1" title="عقب‌تر">←</button></div></div>`).join("");
     };
     drawImgs();
     $("#imgs").onclick = e => {
       const b = e.target.closest("button"); if (!b) return;
       if (b.dataset.x !== undefined) { removed.push(imgs.splice(+b.dataset.x, 1)[0]); }
       if (b.dataset.m !== undefined) { const i = +b.dataset.m, j = i - +b.dataset.d; if (j >= 0 && j < imgs.length) [imgs[i], imgs[j]] = [imgs[j], imgs[i]]; }
+      if (b.dataset.e !== undefined) {
+        const i = +b.dataset.e;
+        openCropper(imgs[i], newUrl => { removed.push(imgs[i]); imgs[i] = newUrl; drawImgs(); });
+      }
       drawImgs();
+    };
+    const drawVideo = () => {
+      $("#vidBox").innerHTML = videoUrl
+        ? `<video src="${esc(videoUrl)}" controls playsinline style="width:100%;max-width:340px;border-radius:6px;background:#000;margin-bottom:8px;display:block"></video><button class="btn sm bad" id="vidDel">حذف ویدیو</button>`
+        : "";
+      const d = $("#vidDel"); if (d) d.onclick = () => { if (videoUrl) removedVideo = videoUrl; videoUrl = ""; drawVideo(); };
+    };
+    drawVideo();
+    $("#fV").onchange = async e => {
+      const f = e.target.files[0]; if (!f) return;
+      $("#vidStatus").textContent = "در حال بررسی ویدیو…";
+      try {
+        const dur = await videoDuration(f);
+        const needsTrim = dur > 15.05;
+        $("#vidStatus").textContent = needsTrim ? "در حال برش به ۱۵ ثانیه، کمی طول می‌کشد…" : "در حال آماده‌سازی ویدیو…";
+        const blob = await transcodeVideo(f, needsTrim ? 15 : null, pct => { $("#vidStatus").textContent = `در حال پردازش ویدیو… ${toFaDigits(Math.round(pct))}٪`; });
+        $("#vidStatus").textContent = "در حال آپلود…";
+        const url = await uploadBlobFile(blob, "listings", "mp4", "video/mp4");
+        if (videoUrl) removedVideo = videoUrl;
+        videoUrl = url; drawVideo();
+        $("#vidStatus").textContent = "ویدیو آماده شد";
+      } catch (er) { toast("پردازش ویدیو ناموفق: " + (er.message || er), true); $("#vidStatus").textContent = ""; }
+      e.target.value = "";
     };
     const hint = () => { $("#hP").textContent = formatToman(num($("#fP").value)); $("#hR").textContent = formatToman(num($("#fR").value)); };
     $("#fP").oninput = $("#fR").oninput = hint; hint();
@@ -382,17 +540,22 @@ dialog::backdrop{background:rgba(6,10,18,.85)}
       }
       $("#up").textContent = ""; e.target.value = "";
     };
-    $("#cancel").onclick = () => { removeFiles(imgs.filter(u => !(l.images || []).includes(u))); dlg.close(); };
+    $("#cancel").onclick = () => {
+      removeFiles(imgs.filter(u => !(l.images || []).includes(u)));
+      if (videoUrl && videoUrl !== (l.video_url || "")) removeFiles([videoUrl]);
+      dlg.close();
+    };
     $("#save").onclick = async () => {
       const title = $("#fT").value.trim(); if (!title) return toast("عنوان را وارد کنید", true);
       const row = { title, category_id: $("#fC").value || null, location: $("#fL").value.trim(), description: $("#fD").value.trim(),
         price: num($("#fP").value), rent: num($("#fR").value), price_text: $("#fPT").value.trim(), area_m2: num($("#fA").value), rooms: num($("#fRm").value),
-        deal_mode: $("#fDM").value, images: imgs, active: $("#fAc").checked, featured: $("#fFe").checked };
+        deal_mode: $("#fDM").value, images: imgs, video_url: videoUrl, active: $("#fAc").checked, featured: $("#fFe").checked };
       $("#save").disabled = true;
       const q = isNew ? sb.from("listings").insert(row) : sb.from("listings").update(row).eq("id", l.id);
       const { error } = await q;
-      if (error) { $("#save").disabled = false; return toast("ذخیره نشد: " + error.message, true); }
+      if (error) { $("#save").disabled = false; return toast(/video_url/.test(error.message) ? "ابتدا دستور SQL ستون ویدیو را در Supabase اجرا کنید (README)" : "ذخیره نشد: " + error.message, true); }
       removeFiles(removed.filter(u => (l.images || []).includes(u)));
+      if ((l.video_url || "") && (l.video_url || "") !== videoUrl) removeFiles([l.video_url]);
       dlg.close(); await loadAll(); renderApp(); toast("ذخیره شد");
     };
     dlg.showModal();
